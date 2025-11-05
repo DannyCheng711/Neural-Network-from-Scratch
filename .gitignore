@@ -1,0 +1,7 @@
+**/__pycache__
+**/*.pyc
+venv
+**/site-packages
+histogram.py
+normalisation.py
+.DS_Store
