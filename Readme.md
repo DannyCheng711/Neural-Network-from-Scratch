@@ -2,15 +2,15 @@
 
 This project contains two parts:  
 
-1. **Part 1 - NN library from scratch (NumPy only):** Implements core neural network components — linear layers, activation and loss functions, forward and backward propagation, mini-batch SGD updates, a simple training loop, and data preprocessing. 
-2. **Part 2 - House value regression:** Applies the implemented NN library to predict median house prices in California using a fully connected neural network, including preprocessing, model training, and evaluation.
+1. **Part 1 - NN library from scratch (NumPy only):** Implements core neural network components, including linear layers, activation and loss functions, forward and backward propagation, mini-batch SGD updates, a simple training loop, and data preprocessing. 
+2. **Part 2 - House value regression:** Applies Pytorch library to predict median house prices in California using a fully connected neural network, including preprocessing, model training, and evaluation.
 
 ## Project Structure
 
 ```
 .
 ├── part1_nn_lib.py                    # NumPy-only NN library + example_main()
-├── part2_house_value_regression.py    # Uses the library for regression
+├── part2_house_value_regression.py    # Uses the Pytorch library for regression
 ├── iris.dat                           # Example dataset for Part 1 (Iris, one-hot labels)
 ├── requirements.txt
 └── README.md
@@ -32,13 +32,13 @@ This file includes four main classes `Layer`, `MultiLayerNetwork`, `Trainer` and
 
 
 
-1. **Layer:** Implements the basic building blocks, including:
+1. **Layer:** Implements the foundational building blocks of the neural network, including:
     - **LinearLayer:** affine transformation with Xavier initialization
 	- **Activation layers:** SigmoidLayer, ReluLayer
 	- **Loss layers:** MSELossLayer, CrossEntropyLossLayer
 
-2. **MultiLayerNetwork:**  Builds a multi-layer perceptron by stacking linear and activation layers.
-Supports full forward propagation, backward propagation, and parameter updates for all layers. 
+2. **MultiLayerNetwork:**  Constructs a full neural network by stacking linear and activation layers.
+Supports forward propagation, backward propagation, and parameter updates across all layers.
 
 3. **Trainer:** Defines the training process, including:
 	- Epoch iterations and mini-batch division
@@ -47,12 +47,12 @@ Supports full forward propagation, backward propagation, and parameter updates f
 	- Optimization method: Mini-batch Stochastic Gradient Descent (SGD)
 
 4. **Preprocessor:**
-Handles data normalization (min–max scaling) and supports both applying and reverting the transformation for evaluation or visualization.
+Handles data normalization with min–max scaling and can revert processed data to its original scale.
 
 ## Part 2: House value regression
 
-This part demonstrates how to use the pytorch NN library to predict median house prices in California.
-It includes data preprocessing, neural network architecture design, training, and evaluation.
+This part demonstrates how to use the PyTorch neural network library to predict median house prices in California.
+It covers the full end-to-end workflow, including data preprocessing, model architecture design, training, and performance evaluation.
 
 ### Model Architecture
 
@@ -67,28 +67,28 @@ Dropout | 20% rate to prevent overfitting |
 | Optimizer | Adam (adaptive learning rate) | 
 
 
+![Model Architecture](./network_arch.png)
 
+The model takes **9 input features**, passes them through **4 hidden layers** with **256 neurons each**, and outputs a **single scalar prediction** for house value *(after hyperparameter tuning)*.  
 
 ### Data Preprocessing 
 
-1. **Handling Missing Values:** Column total_bedrooms imputed using median (robust against skewed distributions).
-2. **Encoding Categorical Variables:** ocean_proximity one-hot encoded.
-3. **Normalization:** Numerical features standardized using Z-score normalization.
+1. **Handling Missing Values:** The total_bedrooms column contained missing values. These were imputed using the median, which is more robust to outliers and skewed distributions.
+2. **Encoding Categorical Variables:** The ocean_proximity feature was one-hot encoded to convert categorical data into numerical form suitable for neural network input.
+3. **Normalization:** All numerical features were standardized using Z-score normalization, preserving relative scaling while reducing the influence of extreme values.
 
 ### Evaluation Metrics: 
 
-1. **MSE:** Average squared difference between actual and predicted values
-2. **RMSE:** Square root of MSE (in same units as price)
-3. **R² Score:** Proportion of variance explained by model
-4. **Adjusted R²:** R² adjusted for number of predictors
-
+1.	**Mean Squared Error (MSE):** Measures the average squared difference between actual and predicted values.
+2.	**Root Mean Squared Error (RMSE):** The square root of MSE, expressed in the same units as the target variable (house prices), making it more interpretable.
+3.	**R² Score:** Represents the proportion of variance in house prices explained by the model. The values closer to 1 indicate better fit.
+4.	**Adjusted R² Score:** Adjusts the R² score for the number of features, preventing artificial improvement when more features are added.
 
 ### Model Selection:
 
-To identify the best-performing network configuration, we conducted hyperparameter tuning using the `Ray` library for distributed search.
+To identify the best-performing network configuration, we conducted hyperparameter tuning using the `Ray Tune` library for distributed search.
 
 The tuning process explored combinations of the following hyperparameters:
-
 
 | Hyperparameter | Search Space | 
 | --- | --- |
@@ -100,8 +100,8 @@ The tuning process explored combinations of the following hyperparameters:
 | Epochs | {1000, 2000} | 
 
 ### Search Strategy:
-- Each trial trained a full model on a 90% training subset and evaluated it on a 10% validation subset.
-- The objective metric was Mean Squared Error (MSE) on the validation set.
+- Each experiment trained a full model on a 90% training subset and evaluated it on a 10% validation subset.
+- The objective metric was MSE on the validation set.
 - Ray Tune coordinated multiple experiments in parallel, automatically reporting intermediate results and selecting the best configurations.
 
     | Best Hyperparameter Found | Value | 
@@ -118,8 +118,8 @@ The tuning process explored combinations of the following hyperparameters:
 ### Experimental Results
 - Increasing hidden layer size improved validation RMSE and R² up to 256 neurons.
 - Adding too many layers (5+) led to overfitting, where training loss decreased but validation loss increased.
-- The 4-layer, 256-neuron model achieved the best trade-off between accuracy and generalization.
-- Error distribution was approximately normal, centered near zero — no major bias detected.
+- The 4 hidden layer, 256 neuron model achieved the best trade-off between accuracy and generalization.
+- Error distribution was approximately normal, centered near zero. No major bias are detected.
 
 ---
 
